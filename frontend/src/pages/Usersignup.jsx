@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
+import axios from 'axios'   ;
+import {UserDataContext} from '../context/UserContext';
+
 
 const Usersignup = () => {
   const [email, setEmail] = useState('');
@@ -8,23 +11,43 @@ const Usersignup = () => {
   const [lastName, setLastName] = useState('');
   const [userData, setUserData] = useState({});
 
-  const handleSubmit = (e) => {
+const navigate=useNavigate();
+const {user, setUser} = React.useContext(UserDataContext);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setUserData({
-      fullName: {
-        firstName: firstName,
-        lastName: lastName
+
+    // The keys here must match your Mongoose Schema exactly
+    const newUser = {
+      name: {
+        firstname: firstName, // lowercase 'n' in firstname
+        lastname: lastName    // lowercase 'n' in lastname
       },
       email: email,
       password: password
-    });
+    };
 
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+
+      if (response.status === 201) {
+          const data = response.data;
+          setUser(data.user);
+          // Don't forget to save the token!
+          localStorage.setItem('token', data.token); 
+          navigate('/home');
+      }
+    } catch (error) {
+      // This will help you see if it's the 3-character limit or email validation
+      console.log("Detailed Error:", error.response?.data);
+    }
+
+    // Resetting fields
     setEmail('');
     setFirstName('');
     setLastName('');
     setPassword('');
-  };
-
+};
   return (
     <div>
       <div className='p-7 h-screen flex flex-col justify-between'>

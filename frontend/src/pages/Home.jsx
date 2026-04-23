@@ -85,7 +85,7 @@ const Home = () => {
                 <VehiclePanel setVehiclePanel={setVehiclePanel} setConfirmRidePanel={setConfirmRidePanel} />
             </div>
 
-            
+
             <div
                 ref={confirmPanelRef}
                 className={`fixed w-full z-30 bottom-0 bg-white px-3 py-5 rounded-t-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-in-out ${confirmRidePanel ? 'translate-y-0' : 'translate-y-full'}`}

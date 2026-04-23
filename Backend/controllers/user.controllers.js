@@ -25,6 +25,10 @@ module.exports.login=async(req,res,next)=>{
     }
 
     const {email,password}=req.body;//taking the data from the client side
+    const isAlreadyExist=await userModel.findOne({email});//checking if the user with the given email already exists in the database
+    if(!isAlreadyExist){
+        return res.status(400).json({message:"User with this email does not exist"});//if the user does not exist then we are sending the error message to the client side
+    }
     const user=await userModel.findOne({email}).select('+password');//finding the user in the database using the email and selecting the password field to compare it with the hashed password
     if(!user){
         return res.status(401).json({error:"Invalid email or password"});//if the user is not found then we are sending the error message to the client side

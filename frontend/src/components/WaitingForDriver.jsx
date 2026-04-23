@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 
 const WaitingForDriver = ({ setWaitingForDriver }) => {
+    const navigate = useNavigate();
     return (
         <div className="flex flex-col h-full bg-white">
 
@@ -83,6 +85,12 @@ const WaitingForDriver = ({ setWaitingForDriver }) => {
                     <p className='text-xs font-bold text-gray-700'>Call driver</p>
                 </div>
             </div>
+            <button 
+                onClick={() => navigate('/riding')}
+                className="w-full bg-green-600 text-white font-semibold p-3 rounded-lg mt-5"
+            >
+                Start Ride (Mock Trigger)
+            </button>
         </div>
     )
 }

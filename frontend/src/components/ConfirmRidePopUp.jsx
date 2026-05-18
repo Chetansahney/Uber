@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 const ConfirmRidePopUp = (props) => {
+    const [otp, setOtp] = useState('');
+    const [otpError, setOtpError] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
+    const riderFirstName = props.ride?.user?.name?.firstname || "";
+    const riderLastName = props.ride?.user?.name?.lastname || "";
+    const riderName = [riderFirstName, riderLastName].filter(Boolean).join(" ") || "Rider";
+    const fareLabel = props.ride?.fare || props.ride?.fare === 0 ? `₹${props.ride?.fare}` : "₹--";
+    const pickup = props.ride?.origin || "Pickup location";
+    const destination = props.ride?.destination || "Destination";
+
     return (
         <div className="h-fit w-full bg-white flex flex-col pb-6">
             {/* Drag Handle */}
@@ -21,14 +32,63 @@ const ConfirmRidePopUp = (props) => {
                     <div className='flex items-center gap-3'>
                         <img className='h-12 w-12 rounded-full object-cover' src="user.webp" alt="Rider" />
                         <div>
-                            <h2 className='text-sm font-bold text-gray-900'>Alex Sahney</h2>
-                            <p className='text-[10px] text-gray-500'>⭐ 4.9 • Cash</p>
+                            <h2 className='text-sm font-bold text-gray-900'>{riderName}</h2>
+                            <p className='text-[10px] text-gray-500'>Cash</p>
                         </div>
                     </div>
                     <div className="text-right">
-                        <p className="text-sm font-black text-gray-900">₹193.20</p>
-                        <p className="text-[10px] text-gray-400">2.2 km</p>
+                        <p className="text-sm font-black text-gray-900">{fareLabel}</p>
                     </div>
+                </div>
+
+                <div className='w-full bg-gray-50 p-4 rounded-xl border border-gray-100'>
+                    <p className='text-xs font-bold text-gray-400 uppercase tracking-widest mb-2'>Enter OTP</p>
+                    <div className='flex items-center gap-3'>
+                        <input
+                            value={otp}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                setOtp(value);
+                                setOtpError('');
+                            }}
+                            className='flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-base font-semibold tracking-widest text-gray-900 outline-none focus:ring-2 focus:ring-yellow-200'
+                            inputMode="numeric"
+                            maxLength={4}
+                            placeholder="----"
+                        />
+                        <button
+                            onClick={async () => {
+                                const otpValue = String(otp || '').trim();
+                                if (!props.ride?._id || otpValue.length !== 4) {
+                                    setOtpError('Enter a valid 4 digit OTP.');
+                                    return;
+                                }
+                                setIsVerifying(true);
+                                setOtpError('');
+                                try {
+                                    const token = localStorage.getItem('captainToken');
+                                    console.log('start-ride payload:', { rideId: props.ride._id, otp: otpValue });
+                                    await axios.post(
+                                        `${import.meta.env.VITE_BASE_URL}/rides/start-ride`,
+                                        { rideId: props.ride._id, otp: otpValue },
+                                        { headers: { Authorization: `Bearer ${token}` } }
+                                    );
+                                } catch (error) {
+                                    setOtpError(error.response?.data?.error || 'OTP verification failed.');
+                                } finally {
+                                    setIsVerifying(false);
+                                }
+                            }}
+                            disabled={isVerifying}
+                            className='bg-black text-white text-xs font-bold px-4 py-3 rounded-xl active:scale-95 transition-all disabled:opacity-60'
+                            type="button"
+                        >
+                            {isVerifying ? 'Verifying...' : 'Verify'}
+                        </button>
+                    </div>
+                    {otpError ? (
+                        <p className='text-xs text-red-500 mt-2'>{otpError}</p>
+                    ) : null}
                 </div>
 
                 {/* 2. Sleek Route Timeline (Smaller Fonts) */}
@@ -41,7 +101,7 @@ const ConfirmRidePopUp = (props) => {
                         <div className="mt-1 w-2.5 h-2.5 rounded-full border-2 border-yellow-500 bg-white z-10"></div>
                         <div>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Pick Up</p>
-                            <h3 className='text-sm font-semibold text-gray-800'>7958 Swift Village</h3>
+                            <h3 className='text-sm font-semibold text-gray-800'>{pickup}</h3>
                         </div>
                     </div>
 
@@ -50,7 +110,7 @@ const ConfirmRidePopUp = (props) => {
                         <div className="mt-1 w-2.5 h-2.5 bg-gray-900 rounded-sm z-10"></div>
                         <div>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Drop Off</p>
-                            <h3 className='text-sm font-semibold text-gray-800'>102/B, Phoenix Marketcity</h3>
+                            <h3 className='text-sm font-semibold text-gray-800'>{destination}</h3>
                         </div>
                     </div>
                 </div>

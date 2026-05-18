@@ -1,263 +1,105 @@
-# User Authentication API Documentation
+# SwiftRide Backend
 
-This document explains the user authentication flow implemented in:
+Node.js + Express + MongoDB backend with JWT auth, ride lifecycle, socket events, and maps integration.
 
-- `routes/users.routes.js`
-- `controllers/user.controllers.js`
-- `services/user.services.js`
-- `models/user.models.js`
+## Setup
 
-It also now includes:
-
-- Captain authentication flow (`/captains/*`)
-- Backend file-by-file reference for the current project structure
-
-## Backend File Details
-
-This section describes what each backend file currently does.
-
-| File | Purpose |
-|---|---|
-| `server.js` | Creates the HTTP server from Express app and starts listening on `PORT` (default `3000`). |
-| `app.js` | Loads environment variables, connects MongoDB, registers middleware (`json`, `urlencoded`, `cors`, `cookie-parser`), and mounts `/users` and `/captains` routes. |
-| `db/db.js` | Connects Mongoose to MongoDB using `process.env.DB_CONNECT`. |
-| `routes/users.routes.js` | Defines user routes: register, login, profile, logout; includes request validation and auth middleware on protected endpoints. |
-| `controllers/user.controllers.js` | Handles user register/login/profile/logout request logic and response formatting. |
-| `services/user.services.js` | User creation service with required-field checks and `User.create(...)`. |
-| `models/user.models.js` | User schema and auth helpers: password hashing, password compare, JWT token generation. |
-| `routes/captain.routes.js` | Defines captain routes: register, login, profile, logout; includes vehicle validations and captain auth middleware on protected endpoints. |
-| `controllers/captain.controller.js` | Handles captain register/login/profile/logout flows including duplicate email check and token handling. |
-| `services/captain.services.js` | Captain creation service with required field validation for profile + vehicle fields. |
-| `models/captain.models.js` | Captain schema with nested vehicle details and auth helpers: hash, compare, JWT generation. |
-| `middleware/auth.middleware.js` | Auth middleware for both users and captains; verifies JWT and rejects blacklisted tokens. |
-| `models/blacklistTokens.model.js` | Stores invalidated JWTs (used on logout) with TTL expiry (`24h`). |
-
-## Captain Authentication API Documentation
-
-This section explains the captain authentication flow implemented in:
-
-- `routes/captain.routes.js`
-- `controllers/captain.controller.js`
-- `services/captain.services.js`
-- `models/captain.models.js`
-
-### Endpoint Summary (Captains)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/captains/register` | Register a new captain and return captain details with JWT token |
-| POST | `/captains/login` | Login an existing captain and return captain details with JWT token |
-| GET | `/captains/profile` | Get the currently authenticated captain profile |
-| GET | `/captains/logout` | Logout the authenticated captain and blacklist current token |
-
-### Register Captain
-
-#### Endpoint
-
-- **Method:** `POST`
-- **Path:** `/captains/register`
-- **Full URL (local):** `http://localhost:3000/captains/register`
-
-#### Request Headers
-
-- `Content-Type: application/json`
-
-#### Request Body
-
-```json
-{
-  "name": {
-    "firstname": "Chetan",
-    "lastname": "Sahney"
-  },
-  "email": "captain@example.com",
-  "password": "mypassword123",
-  "vehicle": {
-    "color": "Black",
-    "model": "Swift Dzire",
-    "plate": "DL01AB1234",
-    "capacity": 4,
-    "vehicleType": "car"
-  }
-}
+```bash
+cd Backend
+npm install
+node server.js
 ```
 
-#### Field Requirements and Validation
+## Environment Variables
 
-| Field | Type | Required | Validation |
-|---|---|---|---|
-| `name` | string | Yes | Minimum length: 3 (current route validation checks `name`) |
-| `email` | string | Yes | Must be a valid email |
-| `password` | string | Yes | Minimum length: 6 |
-| `vehicle.color` | string | Yes | Must not be empty |
-| `vehicle.model` | string | Yes | Must not be empty |
-| `vehicle.plate` | string | Yes | Must not be empty |
-| `vehicle.capacity` | number | Yes | Integer, minimum 1 |
-| `vehicle.vehicleType` | string | Yes | One of: `car`, `bike`, `auto` |
-
-#### Responses
-
-##### 201 Created (Success)
-
-```json
-{
-  "token": "<jwt_token_here>",
-  "captain": {
-    "name": {
-      "firstname": "Chetan",
-      "lastname": "Sahney"
-    },
-    "email": "captain@example.com",
-    "vehicle": {
-      "color": "Black",
-      "model": "Swift Dzire",
-      "plate": "DL01AB1234",
-      "capacity": 4,
-      "vehicleType": "car"
-    },
-    "status": "unavailable",
-    "_id": "65f0abc1234567890abcde12"
-  }
-}
+```
+PORT=3000
+DB_CONNECT=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+GOOGLE_MAPS_API=your_google_maps_api_key
 ```
 
-##### 400 Bad Request
+## Data Models
 
-Possible cases:
-- Request validation error
-- Captain already exists with provided email (`Captain with this email already exists`)
+### User
+- `name.firstname`, `name.lastname`
+- `email`, `password`, `socketId`
 
-##### 401 Unauthorized
+### Captain
+- `name.firstname`, `name.lastname`
+- `email`, `password`, `socketId`, `status`
+- `vehicle.color`, `vehicle.model`, `vehicle.plate`, `vehicle.capacity`, `vehicle.vehicleType`
+- `location` (GeoJSON Point)
 
-Not used by register currently for validation failures.
+### Ride
+- `user`, `captain`, `origin`, `destination`
+- `fare`, `status` (`requested`, `accepted`, `ongoing`, `completed`, `cancelled`)
+- `otp` (hashed)
+- `paymentStatus` (`pending`, `paid`)
 
-### Login Captain
+## APIs
 
-#### Endpoint
+### Auth
 
-- **Method:** `POST`
-- **Path:** `/captains/login`
-- **Full URL (local):** `http://localhost:3000/captains/login`
+Users:
+- `POST /users/register`
+- `POST /users/login`
+- `GET /users/profile`
+- `GET /users/logout`
 
-#### Request Body
+Captains:
+- `POST /captains/register`
+- `POST /captains/login`
+- `GET /captains/profile`
+- `GET /captains/logout`
 
-```json
-{
-  "email": "captain@example.com",
-  "password": "mypassword123"
-}
-```
+### Ride Flow
 
-#### Responses
+- `POST /rides/create` (user)
+- `GET /rides/calculate-fare` (user)
+- `POST /rides/confirm` (captain)
+- `POST /rides/start-ride` (captain OTP)
+- `POST /rides/end-ride` (captain)
+- `POST /rides/complete-payment` (user)
+- `GET /rides/:rideId` (user)
 
-##### 200 OK (Success)
+## Socket Events
 
-```json
-{
-  "token": "<jwt_token_here>",
-  "captain": {
-    "name": {
-      "firstname": "Chetan",
-      "lastname": "Sahney"
-    },
-    "email": "captain@example.com",
-    "vehicle": {
-      "color": "Black",
-      "model": "Swift Dzire",
-      "plate": "DL01AB1234",
-      "capacity": 4,
-      "vehicleType": "car"
-    },
-    "status": "unavailable"
-  }
-}
-```
+- `join` (user/captain)
+- `new-ride` (captain)
+- `ride-confirmed` (user)
+- `ride-started` (user)
+- `ride-ended` (user)
+- `payment-completed` (captain)
+- `update-location-captain` (captain -> server)
+- `captain-location` (server -> user)
 
-##### 401 Unauthorized
+## Algorithms and Logic
 
-Possible messages:
-- `Captain with this email does not exist`
-- `Invalid email or password`
-- Validation errors array
+### Fare Calculation
+Uses Google Distance Matrix API to compute distance and duration, then applies rate tables:
 
-### Get Captain Profile
+- Car: base 50, per km 18, per min 2
+- Auto: base 30, per km 12, per min 1.5
+- Moto: base 20, per km 8, per min 1
 
-#### Endpoint
+### Captain Matching
+- Convert pickup to coordinates (Geocoding API)
+- Query captains within radius using geo index
+- Emit `new-ride` to each captain with socketId
 
-- **Method:** `GET`
-- **Path:** `/captains/profile`
-- **Full URL (local):** `http://localhost:3000/captains/profile`
+### OTP Verification
+- OTP is generated and bcrypt-hashed when ride is created
+- Captain submits OTP to `/rides/start-ride`
+- Server compares bcrypt hash and sets ride status to `ongoing`
 
-#### Authentication
+### Live Tracking
+- Captain emits `update-location-captain` with lat/lng and rideId
+- Server stores location on captain and relays `captain-location` to the user
 
-Protected route. Send token via:
-- Cookie: `token=<jwt_token>`
-- Header: `Authorization: Bearer <jwt_token>`
-
-#### 200 OK (Success)
-
-Returns:
-
-```json
-{
-  "captain": {
-    "_id": "65f0abc1234567890abcde12",
-    "name": {
-      "firstname": "Chetan",
-      "lastname": "Sahney"
-    },
-    "email": "captain@example.com",
-    "vehicle": {
-      "color": "Black",
-      "model": "Swift Dzire",
-      "plate": "DL01AB1234",
-      "capacity": 4,
-      "vehicleType": "car"
-    }
-  }
-}
-```
-
-#### 401 Unauthorized
-
-Returned when token is missing, invalid, expired, or blacklisted.
-
-### Logout Captain
-
-#### Endpoint
-
-- **Method:** `GET`
-- **Path:** `/captains/logout`
-- **Full URL (local):** `http://localhost:3000/captains/logout`
-
-#### Authentication
-
-Protected route. Send token via cookie or Bearer header.
-
-#### 200 OK (Success)
-
-```json
-{
-  "message": "Logged out successfully"
-}
-```
-
-What happens on logout:
-- `token` cookie is cleared.
-- Current token is saved in `blacklistTokens` collection.
-
-### End-to-End Captain Flow
-
-1. `routes/captain.routes.js`
-- Validates request body with `express-validator`.
-- Calls captain controller handlers.
-- Protects `/profile` and `/logout` with `authMiddleware.authCaptain`.
-
-2. `controllers/captain.controller.js`
-- Register: validates input, checks duplicate email, hashes password, creates captain using service, returns JWT.
-- Login: validates input, verifies email/password, sets cookie token, returns JWT.
-- Profile: returns `req.captain`.
-- Logout: clears cookie, blacklists current token.
+### End Ride + Payment
+- Captain ends ride: status -> `completed`, emits `ride-ended`
+- User completes payment: paymentStatus -> `paid`, emits `payment-completed`
 
 3. `services/captain.services.js`
 - Verifies required captain fields.

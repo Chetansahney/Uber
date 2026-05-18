@@ -15,22 +15,29 @@ const Userlogin = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const userData={
-        email: email,
-        password: password
-    }
-    const response= await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
-    if(response.status===200){
-        const data=response.data;
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
-        navigate('/home');
-    }
-
-    setEmail('');
-    setPassword('');
+  e.preventDefault();
+  const userData = {
+    email: email,
+    password: password
   }
+
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
+    if (response.status === 200) {
+      const data = response.data;
+      setUser(data.user);
+      console.log('Login response data:', data); // ← add this
+      localStorage.setItem('userToken', data.token);
+      navigate('/home');
+    }
+  } catch (err) {
+    console.log("Error response:", err.response?.data);  // ← This will tell you exactly why
+    console.log("Status:", err.response?.status);
+  }
+
+  setEmail('');
+  setPassword('');
+}
 
   return (
     <div className='p-7 h-screen flex flex-col justify-between'>

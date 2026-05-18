@@ -8,6 +8,9 @@ connectToDB();
 const userRoutes=require('./routes/users.routes');
 const cookieParser=require('cookie-parser');
 const captainRoutes=require('./routes/captain.routes');
+const mapsRoutes=require('./routes/maps.routes');
+const rideRoutes=require('./routes/ride.routes');
+
 
 app.use(express.json());
 
@@ -25,5 +28,8 @@ app.use('/users',userRoutes);//yaha pe humne userRoutes ko use kiya hai taaki ja
 
 app.use('/captains',captainRoutes);//yaha pe humne captainRoutes ko use kiya hai taaki jab bhi /captains route pe request aayegi toh yeh captainRoutes ke andar jaake dekhega ki waha pe konsa route match ho raha hai aur uske according response dega
 
+app.use('/maps',mapsRoutes);//yaha pe humne mapsRoutes ko use kiya hai taaki jab bhi /maps route pe request aayegi toh yeh mapsRoutes ke andar jaake dekhega ki waha pe konsa route match ho raha hai aur uske according response dega
+
+app.use('/rides',rideRoutes);//yaha pe humne rideRoutes ko use kiya hai taaki jab bhi /rides route pe request aayegi toh yeh rideRoutes ke andar jaake dekhega ki waha pe konsa route match ho raha hai aur uske according response dega
 
 module.exports = app;// to use this app in anyu other files we want

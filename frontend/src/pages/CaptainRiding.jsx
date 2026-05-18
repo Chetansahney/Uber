@@ -1,20 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronUp, Navigation } from 'lucide-react';
 import FinishRide from '../components/FinishRIde';
 import { useRef } from 'react';
+import CaptainRouteMap from '../components/CaptainRouteMap';
 
 
 const CaptainRiding = (props) => {
     const [finishRidePanel, setFinishRidePanel] = useState(false);
     const finishRidePanelRef = React.useRef(null);
     const[captainRiding, setCaptainRiding] = useState(true);
+    const [ride, setRide] = useState(null);
     const submitHandler=(e)=>{
         e.preventDefault();
         setFinishRidePanel(true);
         setCaptainRiding(false);
     };
     const[otp, setOtp] = useState("");
+
+    useEffect(() => {
+        const rideData = localStorage.getItem('activeRide');
+        if (!rideData) {
+            return;
+        }
+        try {
+            setRide(JSON.parse(rideData));
+        } catch (error) {
+            console.error('Failed to parse activeRide:', error);
+        }
+    }, []);
 
     return (
         <div className='h-screen relative flex flex-col justify-end'>
@@ -26,7 +40,7 @@ const CaptainRiding = (props) => {
             </div>
 
             <div className='h-4/5 w-screen fixed top-0 left-0 -z-10'>
-                <img className='w-full h-full object-cover' src="map.png" alt="" />
+                <CaptainRouteMap ride={ride} mode="to-destination" />
             </div>
 
             <div className='h-1/5 p-6 bg-yellow-400 flex items-center justify-between relative shadow-2xl rounded-t-3xl'>
@@ -65,7 +79,7 @@ const CaptainRiding = (props) => {
                 </div>
             
             <div ref={finishRidePanelRef} className={`fixed w-full z-20 bottom-0 bg-white px-5 py-10 pt-12 rounded-t-3xl shadow-2xl transition-transform duration-500 ease-in-out ${finishRidePanel ? 'translate-y-0' : 'translate-y-full'}`}>
-                <FinishRide />
+                <FinishRide ride={ride} />
             </div>
         </div>
     );

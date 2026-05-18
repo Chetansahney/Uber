@@ -4,7 +4,7 @@ import { CaptainDataContext } from '../context/CaptainContext';
 import axios from 'axios';
 
 const CaptainProtectWrapper = ({ children }) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('captainToken');
     const navigate = useNavigate();
     const { setCaptain } = useContext(CaptainDataContext);
     const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +28,7 @@ const CaptainProtectWrapper = ({ children }) => {
         })
         .catch((error) => {
             console.error("Profile Fetch Error:", error);
-            localStorage.removeItem('token');
+            localStorage.removeItem('captainToken');
             navigate('/captain-login');
         });
     }, [token, navigate, setCaptain]); // Logic stays safely inside here

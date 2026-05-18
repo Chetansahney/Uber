@@ -1,6 +1,21 @@
 import React from "react";
 
 const RidePopUp = (props) => {
+    const pickup = props.pickup || "562/11-A";
+    const pickupDetail = props.pickupDetail || "Kankariya Talab, Ahmedabad";
+    const destination = props.destination || "102/B";
+    const destinationDetail = props.destinationDetail || "Phoenix Marketcity, Bengaluru";
+    const fare = props.fare;
+    const distanceTime = props.distanceTime;
+    const distance = props.distance;
+    const rider = props.user;
+
+    const riderFirstName = rider?.name?.firstname || "";
+    const riderLastName = rider?.name?.lastname || "";
+    const riderName = [riderFirstName, riderLastName].filter(Boolean).join(" ") || "Rider";
+
+    const fareLabel = fare || fare === 0 ? `₹${fare}` : "₹--";
+    const distanceLabel = distanceTime?.distance || distance || "--";
     return (
         <div >
     
@@ -25,13 +40,13 @@ const RidePopUp = (props) => {
                 />
             </div>
             <div>
-                <h2 className='text-lg font-bold text-gray-900 leading-tight'>Alex Sahney</h2>
-                <p className='text-xs text-gray-500 font-medium'>⭐ 4.9 • 5 min away</p>
+                <h2 className='text-lg font-bold text-gray-900 leading-tight'>{riderName}</h2>
+                <p className='text-xs text-gray-500 font-medium'>⭐ 4.9 • {distanceLabel} away</p>
             </div>
         </div>
         <div className='text-right'>
-            <h4 className='text-2xl font-black text-gray-900'>₹193.20</h4>
-            <p className='text-[10px] font-bold text-gray-400 tracking-widest uppercase'>1.4 km</p>
+            <h4 className='text-2xl font-black text-gray-900'>{fareLabel}</h4>
+            <p className='text-[10px] font-bold text-gray-400 tracking-widest uppercase'>{distanceLabel}</p>
         </div>
     </div>
 
@@ -43,16 +58,16 @@ const RidePopUp = (props) => {
         <div className='flex items-center gap-5 p-4 relative bg-white'>
             <i className="text-xl ri-map-pin-user-fill text-gray-400"></i>
             <div>
-                <h3 className='text-base font-bold text-gray-800'>562/11-A</h3>
-                <p className='text-sm text-gray-500'>Kankariya Talab, Ahmedabad</p>
+                <h3 className='text-base font-bold text-gray-800'>{pickup}</h3>
+                <p className='text-sm text-gray-500'>{pickupDetail}</p>
             </div>
         </div>
 
         <div className='flex items-center gap-5 p-4 relative bg-white'>
             <i className="text-xl ri-map-pin-2-fill text-gray-900"></i>
             <div>
-                <h3 className='text-base font-bold text-gray-800'>102/B</h3>
-                <p className='text-sm text-gray-500'>Phoenix Marketcity, Bengaluru</p>
+                <h3 className='text-base font-bold text-gray-800'>{destination}</h3>
+                <p className='text-sm text-gray-500'>{destinationDetail}</p>
             </div>
         </div>
     </div>
@@ -67,6 +82,7 @@ const RidePopUp = (props) => {
             Ignore
         </button>
         <button onClick={() => {
+                        props.confirmride();
                         props.setRidePopUp(false);
                         props.setconfirmRidePopUp(true);
                     }}

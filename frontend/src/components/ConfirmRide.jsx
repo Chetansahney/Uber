@@ -1,6 +1,38 @@
 import React from 'react'
 
-const ConfirmRide = ({ setConfirmRidePanel, setVehiclePanel,setLookingForDriverPanel, pickup, destination }) => {
+const ConfirmRide = ({
+    setConfirmRidePanel,
+    setVehiclePanel,
+    setLookingForDriverPanel,
+    pickup,
+    destination,
+    fare,
+    distanceTime,
+    selectedVehicle,
+    createRide,
+}) => {
+    const vehicleImages = {
+        car: '/cab.png',
+        moto: '/bike.png',
+        auto: '/auto.png',
+    };
+
+    const vehicleImage = vehicleImages[selectedVehicle] || vehicleImages.car;
+    const rideFare = fare?.[selectedVehicle];
+    const getShortName = (location) => {
+        if (!location) return '';
+        return location.split(',')[0].trim();
+    };
+
+    const handleConfirm = async () => {
+        const ride = await createRide(selectedVehicle);
+        if (!ride) {
+            return;
+        }
+        setLookingForDriverPanel(true);
+        setConfirmRidePanel(false);
+        setVehiclePanel(false);
+    };
     return (
         <div>
             
@@ -14,7 +46,7 @@ const ConfirmRide = ({ setConfirmRidePanel, setVehiclePanel,setLookingForDriverP
 
             <div className='flex flex-col justify-between items-center gap-4'>
                 
-                <img className='h-32 object-contain' src="/cab.png" alt="Selected Vehicle" />
+                <img className='h-24 object-contain' src={vehicleImage} alt="Selected Vehicle" />
 
                 
                 <div className='w-full mt-5'>
@@ -23,8 +55,8 @@ const ConfirmRide = ({ setConfirmRidePanel, setVehiclePanel,setLookingForDriverP
                     <div className='flex items-center gap-5 p-3 border-b-2 border-gray-100'>
                         <i className="text-lg ri-map-pin-user-fill"></i>
                         <div>
-                            <h3 className='text-lg font-bold leading-tight'>562/11-A</h3>
-                            <p className='text-sm text-gray-600'>{pickup || "Kankariya Talab, Ahmedabad"}</p>
+                            <h3 className='text-sm font-bold leading-tight'>{getShortName(pickup)}</h3>
+                            <p className='text-xs text-gray-600'>{pickup || "Kankariya Talab, Ahmedabad"}</p>
                         </div>
                     </div>
 
@@ -32,8 +64,8 @@ const ConfirmRide = ({ setConfirmRidePanel, setVehiclePanel,setLookingForDriverP
                     <div className='flex items-center gap-5 p-3 border-b-2 border-gray-100'>
                         <i className="text-lg ri-map-pin-2-fill"></i>
                         <div>
-                            <h3 className='text-lg font-bold leading-tight'>102/B</h3>
-                            <p className='text-sm text-gray-600'>{destination || "Phoenix Marketcity, Bengaluru"}</p>
+                            <h3 className='text-sm font-bold leading-tight'>{getShortName(destination)}</h3>
+                            <p className='text-xs text-gray-600'>{destination || "Phoenix Marketcity, Bengaluru"}</p>
                         </div>
                     </div>
 
@@ -41,19 +73,21 @@ const ConfirmRide = ({ setConfirmRidePanel, setVehiclePanel,setLookingForDriverP
                     <div className='flex items-center gap-5 p-3'>
                         <i className="text-lg ri-currency-line"></i>
                         <div>
-                            <h3 className='text-lg font-bold leading-tight'>₹193.20</h3>
-                            <p className='text-sm text-gray-600'>Cash, Cash</p>
+                            <h3 className='text-lg font-bold leading-tight'>
+                                {rideFare || rideFare === 0 ? `₹${rideFare}` : '₹--'}
+                            </h3>
+                            <p className='text-sm text-gray-600'>
+                                {distanceTime?.duration
+                                    ? `${distanceTime.duration}${distanceTime.distance ? ` • ${distanceTime.distance}` : ''}`
+                                    : 'Cash'}
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 
                 <button 
-                    onClick={() => {
-                        setLookingForDriverPanel(true)
-                        setConfirmRidePanel(false)
-                        setVehiclePanel(false)
-                    }}
+                    onClick={handleConfirm}
                     className="w-full bg-green-600 text-white text-lg font-semibold py-3 rounded-xl mt-5 active:scale-95 transition-all"
                 >
                     Confirm

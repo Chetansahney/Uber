@@ -1,16 +1,52 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 
 const FinishRide = (props) => {
     const [swipeValue, setSwipeValue] = useState(0);
+    const [isEnding, setIsEnding] = useState(false);
+    const navigate = useNavigate();
+    const ride = props.ride;
+    const captain = ride?.captain;
+    const captainFirstName = captain?.name?.firstname || '';
+    const captainLastName = captain?.name?.lastname || '';
+    const captainName = [captainFirstName, captainLastName].filter(Boolean).join(' ') || 'Captain';
+    const vehicle = captain?.vehicle || {};
+    const plate = vehicle.plate || '---';
+    const vehicleLabel = [vehicle.model, vehicle.color].filter(Boolean).join(' • ') || 'Vehicle details';
+    const fare = ride?.fare ?? '--';
+    const destination = ride?.destination || 'Destination';
 
     const handleSwipe = (e) => {
         const value = parseInt(e.target.value);
         setSwipeValue(value);
 
-        if (value >= 98) {
-            console.log("Ride Completed");
-            // Trigger finish logic here
+        if (value >= 98 && !isEnding) {
+            setIsEnding(true);
+            const token = localStorage.getItem('captainToken');
+            if (!token || !ride?._id) {
+                setSwipeValue(0);
+                setIsEnding(false);
+                return;
+            }
+            axios
+                .post(
+                    `${import.meta.env.VITE_BASE_URL}/rides/end-ride`,
+                    { rideId: ride._id },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+                .then(() => {
+                    localStorage.removeItem('activeRide');
+                    navigate('/captainhome');
+                })
+                .catch((error) => {
+                    console.error('Failed to end ride:', error.response?.data || error.message);
+                    setSwipeValue(0);
+                })
+                .finally(() => {
+                    setIsEnding(false);
+                });
         }
     };
 
@@ -28,11 +64,11 @@ const FinishRide = (props) => {
                 <div className='flex items-center gap-3'>
                     <img className='h-10 w-10 rounded-full object-cover' src="https://plus.unsplash.com/premium_photo-1689530776021-6f1f6a1500d1?q=80&w=1000&auto=format&fit=crop" alt="User" />
                     <div>
-                        <h2 className='text-base font-bold'>Sarthak Sharma</h2>
-                        <p className='text-[10px] text-gray-500'>Payment: Cash</p>
+                        <h2 className='text-base font-bold'>{captainName}</h2>
+                        <p className='text-[10px] text-gray-500'>{plate} • {vehicleLabel}</p>
                     </div>
                 </div>
-                <h5 className='text-lg font-black'>₹190</h5>
+                <h5 className='text-lg font-black'>₹{fare}</h5>
             </div>
 
             {/* Destination Detail */}
@@ -40,8 +76,8 @@ const FinishRide = (props) => {
                 <div className='flex items-center gap-4 px-1'>
                     <MapPin size={20} className='text-gray-600' />
                     <div>
-                        <h3 className='text-base font-bold tracking-tight'>562/11-A</h3>
-                        <p className='text-xs text-gray-500'>Kankariya Talab, Ahmedabad</p>
+                        <h3 className='text-base font-bold tracking-tight'>{destination}</h3>
+                        <p className='text-xs text-gray-500'>Drop off</p>
                     </div>
                 </div>
             </div>

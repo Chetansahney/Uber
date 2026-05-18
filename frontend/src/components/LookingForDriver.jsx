@@ -1,11 +1,24 @@
 import React from 'react'
 
-const LookingForDriver = ({ setLookingForDriverPanel, setWaitingForDriver, pickup, destination }) => {
+const LookingForDriver = ({
+    setLookingForDriverPanel,
+    setWaitingForDriver,
+    pickup,
+    destination,
+    fare,
+    distanceTime,
+    selectedVehicle,
+}) => {
+    const vehicleImages = {
+        car: '/cab.png',
+        moto: '/bike.png',
+        auto: '/auto.png',
+    };
+
+    const vehicleImage = vehicleImages[selectedVehicle] || vehicleImages.car;
+    const rideFare = fare?.[selectedVehicle];
     return (
-        <div onClick={() => {
-            setLookingForDriverPanel(false)
-            setWaitingForDriver(true)
-        }}>
+        <div>
             
             <div className="w-full flex justify-center mb-2" onClick={(e) => {
                 e.stopPropagation(); // Prevents clicking the handle from finding a driver
@@ -27,7 +40,7 @@ const LookingForDriver = ({ setLookingForDriverPanel, setWaitingForDriver, picku
                     <div className='h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center border-2 border-gray-200 z-10'>
                         <i className="ri-user-6-fill text-3xl text-gray-400"></i>
                     </div>
-                    <img className='h-24 -ml-4 object-contain' src="/cab.png" alt="Vehicle" />
+                    <img className='h-24 -ml-4 object-contain' src={vehicleImage} alt="Vehicle" />
                 </div>
 
                 <div className='w-full mt-5'>
@@ -50,8 +63,14 @@ const LookingForDriver = ({ setLookingForDriverPanel, setWaitingForDriver, picku
                     <div className='flex items-center gap-5 p-3'>
                         <i className="text-lg ri-currency-line"></i>
                         <div>
-                            <h3 className='text-lg font-bold leading-tight'>₹193.20</h3>
-                            <p className='text-sm text-gray-600'>Payment: Cash</p>
+                            <h3 className='text-lg font-bold leading-tight'>
+                                {rideFare || rideFare === 0 ? `₹${rideFare}` : '₹--'}
+                            </h3>
+                            <p className='text-sm text-gray-600'>
+                                {distanceTime?.duration
+                                    ? `${distanceTime.duration}${distanceTime.distance ? ` • ${distanceTime.distance}` : ''}`
+                                    : 'Payment: Cash'}
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -10,7 +10,7 @@ body('password').isLength({min:6}).withMessage("Password should be at least 6 ch
 body('vehicle.model').notEmpty().withMessage("Vehicle model is required"),
 body('vehicle.plate').notEmpty().withMessage("Vehicle plate is required"),
 body('vehicle.capacity').isInt({min:1}).withMessage("Vehicle capacity must be at least 1"),
-body('vehicle.vehicleType').isIn(["car","bike","auto"]).withMessage("Vehicle type must be either car, bike or auto")],captainController.register);
+body('vehicle.vehicleType').isIn(["car","bike","moto","auto"]).withMessage("Vehicle type must be either car, bike, moto or auto")],captainController.register);
 
 
 router.post('/login',[body('email').isEmail().withMessage("Please enter a valid email address"),

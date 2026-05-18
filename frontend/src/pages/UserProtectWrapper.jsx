@@ -4,7 +4,7 @@ import axios from 'axios';
 import { UserDataContext } from '../context/UserContext'; // Assuming this is your context
 
 const UserProtectWrapper = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('userToken');
   const navigate = useNavigate();
   const { setUser } = useContext(UserDataContext); // Get setUser from context
   const [isLoading, setIsLoading] = useState(true);
@@ -22,13 +22,13 @@ const UserProtectWrapper = ({ children }) => {
     })
     .then((response) => {
       if (response.status === 200) {
-        setUser(response.data.user);
+        setUser(response.data);
         setIsLoading(false);
       }
     })
     .catch((error) => {
       console.log(error);
-      localStorage.removeItem('token');
+      localStorage.removeItem('userToken');
       navigate('/Userlogin');
     });
   }, [token, navigate, setUser]);

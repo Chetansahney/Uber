@@ -34,7 +34,7 @@ const {user, setUser} = React.useContext(UserDataContext);
           const data = response.data;
           setUser(data.user);
           // Don't forget to save the token!
-          localStorage.setItem('token', data.token); 
+          localStorage.setItem('userToken', data.token); 
           navigate('/home');
       }
     } catch (error) {

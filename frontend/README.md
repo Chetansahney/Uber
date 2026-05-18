@@ -1,16 +1,61 @@
-# React + Vite
+# SwiftRide Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for SwiftRide with socket-driven ride lifecycle and Google Maps tracking.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## React Compiler
+## Environment Variables
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Create `frontend/.env`:
 
-## Expanding the ESLint configuration
+```
+VITE_BASE_URL=http://localhost:3000
+VITE_GOOGLE_MAPS_API=your_google_maps_api_key
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Routes
+
+- `/` Start screen
+- `/home` User home + ride creation
+- `/riding` User ride page
+- `/start-ride` User ride page after OTP
+- `/userlogin`, `/usersignup`
+- `/captainhome` Captain home
+- `/captain-riding` Captain ride page
+- `/captainlogin`, `/captainsignup`
+
+## Core UI Flow
+
+1. User selects pickup + destination
+2. Fare and ETA are computed via backend
+3. User confirms ride -> captain receives new ride via socket
+4. Captain accepts ride -> user sees driver details
+5. Captain enters OTP -> ride starts -> user navigates to `/start-ride`
+6. Captain ends ride -> user can complete payment
+
+## Live Tracking
+
+- `LiveTracking` shows real-time captain + user positions
+- `CaptainRouteMap` shows shortest route to pickup and destination
+- `UserRouteMap` shows shortest route to destination
+
+## Socket Events
+
+- `ride-confirmed` (user)
+- `ride-started` (user)
+- `ride-ended` (user)
+- `payment-completed` (captain)
+- `captain-location` (user)
+
+## Components
+
+- `ConfirmRide`, `LookingForDriver`, `WaitingForDriver`
+- `ConfirmRidePopUp`, `RidePopUp`
+- `LiveTracking`, `CaptainRouteMap`, `UserRouteMap`
+- `FinishRide`

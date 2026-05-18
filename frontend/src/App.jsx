@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import Home from './pages/home'; // Check if file is home.jsx or Home.jsx
+import Home from './pages/Home'; // Check if file is home.jsx or Home.jsx
 import Userlogin from './pages/Userlogin';
 import Usersignup from './pages/Usersignup';
 import Captainlogin from './pages/Captainlogin';
@@ -12,6 +12,8 @@ import CaptainHome from './pages/CaptainHome';
 import CaptainProtectWrapper from './pages/CaptainProtectWrapper';
 import Riding from './pages/Riding';
 import CaptainRiding from './pages/CaptainRiding';
+import livetracking from './components/livetracking';
+import WaitingForDriver from './components/WaitingForDriver';
 const App = () => {
   return (
     <div>
